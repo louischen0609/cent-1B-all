@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0" # 指定使用 GPU 0
+os.environ["CUDA_VISIBLE_DEVICES"] = "2" # 指定使用 GPU 0
 import json
 import yaml
 from typing import Union
@@ -250,11 +250,11 @@ def centralized_finetune():
         bf16=True,
         logging_steps=1,
         optim="adamw_torch",
-        #evaluation_strategy="epoch" if eval_dataset else "no",
+        eval_strategy="epoch",
         save_strategy="epoch", 
         output_dir=output_dir_for_run, 
         save_total_limit=num_epochs, 
-        load_best_model_at_end=False, 
+        load_best_model_at_end=True,
         group_by_length=group_by_length,
         dataloader_drop_last=False,
         gradient_checkpointing=True,

@@ -19,12 +19,12 @@ batch_size: 32
 micro_batch_size: 8
 num_epochs: 100 # 每個 JSON 資料檔案的訓練 epoch 數
 learning_rate: 3.0e-4
-val_set_size: 0
+val_set_size: 0.1 # 修改此處：使用 10% 資料作為驗證集
 cutoff_len: 512
 
 # LoRA hyperparams
-lora_r: 16
-lora_alpha: 16
+lora_r: 4
+lora_alpha: 4
 lora_dropout: 0.05
 lora_target_modules: [ "q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "down_proj", "up_proj" ]
 
