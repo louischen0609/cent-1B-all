@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "2" # 指定使用 GPU 0
+os.environ["CUDA_VISIBLE_DEVICES"] = "1" # 指定使用 GPU 0
 import json
 import yaml
 from typing import Union
@@ -244,7 +244,8 @@ def centralized_finetune():
     training_args = TrainingArguments(
         per_device_train_batch_size=micro_batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
-        warmup_steps=20,
+        warmup_ratio=0.05,
+        weight_decay=0.01,
         num_train_epochs=num_epochs, 
         learning_rate=learning_rate,
         bf16=True,

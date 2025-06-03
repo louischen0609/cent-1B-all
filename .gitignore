@@ -1,4 +1,4 @@
 wandb/
-lora-centralized/
+lora-centralized*/
 all_modules.txt
 test.ipynb
