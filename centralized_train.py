@@ -6,8 +6,9 @@ from typing import Union
 import wandb # Import wandb
 os.environ["WANDB_DISABLE_SYSTEM"] = "true"
 from bitsandbytes import nn as bnb_nn
-
-
+from transformers import EarlyStoppingCallback
+import random
+import numpy as np  
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, BitsAndBytesConfig
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
@@ -196,6 +197,7 @@ def centralized_finetune():
         task_type="CAUSAL_LM",
     )
     model = get_peft_model(model, peft_config)
+    print(f"Trainable parameters: {model.print_trainable_parameters()}")
 
     if torch.cuda.device_count() > 1:
         print("Using multiple GPUs")
@@ -224,10 +226,10 @@ def centralized_finetune():
 
 
         train_val = data.train_test_split(test_size=val_set_size, shuffle=True, seed=42)
-        train_dataset = train_val["train"].shuffle().map(generate_and_tokenize_prompt)
-        eval_dataset = train_val["test"].shuffle().map(generate_and_tokenize_prompt)
+        train_dataset = train_val["train"].shuffle(seed=42).map(generate_and_tokenize_prompt)
+        eval_dataset = train_val["test"].shuffle(seed=42).map(generate_and_tokenize_prompt)
         print("First processed sample from the training dataset (after tokenization):")
-        print(train_dataset[0])
+        print(train_dataset[42])
     else:
         train_dataset = data.shuffle().map(generate_and_tokenize_prompt)
         eval_dataset = None
@@ -249,10 +251,12 @@ def centralized_finetune():
         num_train_epochs=num_epochs, 
         learning_rate=learning_rate,
         bf16=True,
-        logging_steps=1,
+        #logging_strategy="epoch",
+        logging_steps=100,
         optim="adamw_torch",
-        eval_strategy="epoch",
-        save_strategy="epoch", 
+        eval_strategy="steps",
+        eval_steps=100,
+        save_strategy="steps", 
         output_dir=output_dir_for_run, 
         save_total_limit=num_epochs, 
         load_best_model_at_end=True,
@@ -268,6 +272,7 @@ def centralized_finetune():
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         args=training_args,
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=7)],
         # tokenizer=tokenizer, # SFTTrainer can infer tokenizer from model if not set for some models, but explicit is safer.
                                # However, your original code had processing_class=tokenizer, which is not a valid SFTTrainer arg.
                                # SFTTrainer does not have a processing_class arg.
@@ -307,5 +312,17 @@ def centralized_finetune():
     print(f"Memory cleared. Training finished.") # 更新日誌
 
 
+def seed_all(seed: int):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # 多 GPU 時使用
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    print(f"[INFO] Global seed set to: {seed}")
+
 if __name__ == "__main__":
+    seed_all(config["seed"])
     centralized_finetune() 

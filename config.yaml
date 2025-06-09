@@ -1,17 +1,18 @@
 # Centralized Training (Centralized Finetuning) 參數設定檔
+seed: 42
 
 # model/data params
 global_model: 'meta-llama/Llama-3.2-1B'
 data_path: 'dolly-dir-20-client-json' # 指定包含多個 JSON 格式資料集的目錄
 test_path: './data/global_test.json'
-output_dir: './lora-centralized-1B-wd' # 此為基礎輸出目錄，腳本會在此目錄下為每個檔案的每個 epoch 創建子目錄
+output_dir: './lora-centralized-3B-0605' # 此為基礎輸出目錄，腳本會在此目錄下為每個檔案的每個 epoch 創建子目錄
 load_in_4bit: true # 設定為 true 以 4-bit 量化載入模型
 load_in_8bit: false  # 若 load_in_4bit 為 false，則此設定為 true 時以 8-bit 量化載入模型
 
 # Wandb Configuration
 use_wandb: true
 wandb_project: "centralized-llm-all"
-wandb_run_name_prefix: "llama3.2-1B-dolly-all-wd"
+wandb_run_namde_prefix: "llama3.2-1B-dolly-16/32"
 wandb_entity: null # Optional: Your wandb entity/team name, e.g., "my-team"
 
 # training hyperparams
@@ -23,8 +24,8 @@ val_set_size: 0.1 # 修改此處：使用 10% 資料作為驗證集
 cutoff_len: 1024
 
 # LoRA hyperparams
-lora_r: 8
-lora_alpha: 16
+lora_r: 4
+lora_alpha: 8
 lora_dropout: 0.1
 lora_target_modules: [ "q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "down_proj", "up_proj" ]
 

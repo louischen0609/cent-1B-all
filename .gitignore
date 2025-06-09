@@ -2,3 +2,4 @@ wandb/
 lora-centralized*/
 all_modules.txt
 test.ipynb
+test.py
